@@ -36,7 +36,7 @@ TArb ConstrArb(FILE *fin, int N)
 
     int i;
     for (i = 0; i < N; i++) {
-        char cuvant[21];
+        char cuvant[21];  // presupun ca nu exista cuvinte cu mai mult de 20 de litere
         fscanf(fin, "%s", cuvant);
 
         int len_cuv = strlen(cuvant);
@@ -140,7 +140,7 @@ int AfisareArbore(FILE *fout, TArb t)
 
             int i;
             for (i = 0; i < 27; i++) {
-                if (n && n->copii[i]) {
+                if (n->copii[i]) {
                     int rez = IntrQ(c, n->copii[i]);
                     if (!rez) {
                         DistrugeQ(&c);
@@ -163,7 +163,7 @@ int NrFrunze(TArb t)
 
     int nr = 0;
 
-    if (t->copii[0]) {  // nodurile frunza sunt cele cu caracterul '$'
+    if (t->copii[0]) {  // nodurile frunza sunt cele cu caracterul '$', retinute pe poz 0 in vectorii de copii
         nr++;
     }
 
@@ -237,9 +237,8 @@ int ExistaSufix(TArb t, char *sufix)
 
     if (k == len_suf && aux->copii[0]) {
         return 1;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
 // implementare coada pentru parcurgerea in latime:

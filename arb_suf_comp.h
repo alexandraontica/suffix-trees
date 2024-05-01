@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "arb_suf.h"
+
+#ifndef ARBORE_COMP_H
+#define ARBORE_COMP_H
 
 typedef struct nod_comp {
     char *eticheta;
@@ -20,8 +24,10 @@ typedef struct coada_comp {
 
 // functii cerinta 4:
 TArbComp AlocNodComp(char *eticheta_nod);
+TArbComp TransfTArbInTArbComp(TArb t, char *eticheta);
 TArbComp ConstrArbComp(FILE *fin, int N);
-void AdaugaSufix(TArbComp t, char *sufix);
+// TArb CreareSufix(TArb t, char *sufix);
+// void AdaugaSufixe(TArbComp t_comp, TArb t);
 int AfisareArboreComp(FILE *fout, TArbComp t);
 void DistrugeArbComp(TArbComp *t);
 
@@ -32,3 +38,5 @@ int IntrQComp(TCoadaComp *c, TArbComp n);
 int ExtrQComp(TCoadaComp *c, TArbComp *n);
 void ResetQComp(TCoadaComp *c);
 void DistrugeQComp(TCoadaComp **c);
+
+#endif

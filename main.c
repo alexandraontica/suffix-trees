@@ -84,19 +84,19 @@ int main(int argc, char *argv[])
         DistrugeArb(&arb_suf);
     } else if (!strcmp(argv[1], "-c4")){
         // cerinta 4
-        // TArbComp arb_suf_comp = ConstrArbComp(fin, N);
-        // if (!arb_suf_comp) {
-        //     fprintf(stderr, "Constructia arborelui nu a reusit\n");
-        //     CloseFiles(fin, fout);
-        //     return 0;
-        // }
+        TArbComp arb_suf_comp = ConstrArbComp(fin, N);
+        if (!arb_suf_comp) {
+            fprintf(stderr, "Constructia arborelui nu a reusit\n");
+            CloseFiles(fin, fout);
+            return 0;
+        }
 
-        // int rez = AfisareArboreComp(fout, arb_suf_comp);
-        // if (!rez) {
-        //     fprintf(stderr, "Afisarea nu a reusit\n");
-        // }        
+        int rez = AfisareArboreComp(fout, arb_suf_comp);
+        if (!rez) {
+            fprintf(stderr, "Afisarea nu a reusit\n");
+        }        
 
-        // DistrugeArbComp(&arb_suf_comp);
+        DistrugeArbComp(&arb_suf_comp);
     } else {
         fprintf(stderr, "Cerinta invalida\n");
     }

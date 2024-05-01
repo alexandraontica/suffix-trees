@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef ARBORE_H
+#define ARBORE_H
+
 typedef struct nod {
     char eticheta;
     struct nod *copii[27];
@@ -36,3 +39,5 @@ int IntrQ(TCoada *c, TArb n);
 int ExtrQ(TCoada *c, TArb *n);
 void ResetQ(TCoada *c);
 void DistrugeQ(TCoada **c);
+
+#endif
