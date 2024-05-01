@@ -19,8 +19,8 @@ TArbComp AlocNodComp(char *eticheta_nod)
 }
 
 TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
-// scriu arborele de sufixe creat ca la cerintele anterioare folosind structura TArbComp
-// ca sa il pot prelucra ulterior
+// scriu arborele de sufixe creat ca la cerintele anterioare
+// folosind structura TArbComp ca sa il pot prelucra ulterior
 {
     if (!t) {
         return NULL;
@@ -33,9 +33,9 @@ TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
     int i;
     for (i = 0; i < 27; ++i) {
         if (t->copii[i]) {
-            char eticheta_noua[2] = "";
-            eticheta_noua[0] = t->copii[i]->eticheta;
-            eticheta_noua[1] = '\0';
+            char eticheta_urm[2] = "";
+            eticheta_urm[0] = t->copii[i]->eticheta;
+            eticheta_urm[1] = '\0';
 
             TArbComp *aux = (TArbComp *)realloc(t_comp->copii, (t_comp->nr_copii + 1) * sizeof(TArbComp));
             if (!aux) {
@@ -44,7 +44,7 @@ TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
             }
             t_comp->copii = aux;
 
-            t_comp->copii[t_comp->nr_copii] = TransfTArbInTArbComp(t->copii[i], eticheta_noua);
+            t_comp->copii[t_comp->nr_copii] = TransfTArbInTArbComp(t->copii[i], eticheta_urm);
             if (!t_comp->copii[t_comp->nr_copii]) {
                 DistrugeArbComp(&t_comp);
                 return NULL;
@@ -57,6 +57,49 @@ TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
     return t_comp;
 }
 
+void CompresareSufixe(TArbComp t)
+{
+    if (!t) {
+        return;
+    }
+
+    if (t->nr_copii == 1 && strcmp(t->copii[0]->eticheta, "$")) {
+        char *aux = (char *)realloc(t->eticheta, strlen(t->eticheta) + strlen(t->copii[0]->eticheta) + 1);
+        if (!aux) {
+            return;
+        }
+
+        t->eticheta = aux;
+        strcat(t->eticheta, t->copii[0]->eticheta);
+
+        TArbComp *aux2 = (TArbComp *)realloc(t->copii, t->copii[0]->nr_copii * sizeof(TArbComp));
+        if (!aux2) {
+            return;
+        }
+
+        t->copii = aux2;
+
+        TArbComp aux3 = t->copii[0];
+        t->nr_copii = t->copii[0]->nr_copii;
+        
+        int i;
+        for (i = 0; i < t->nr_copii; i++) {
+            t->copii[i] = aux3->copii[i]; 
+        }
+
+        free(aux3->eticheta);
+        free(aux3->copii);
+        free(aux3);
+
+        CompresareSufixe(t); // de justificat
+    }
+
+    int i;
+    for (i = 0; i < t->nr_copii; i++) {
+        CompresareSufixe(t->copii[i]);
+    }
+}
+
 TArbComp ConstrArbComp(FILE *fin, int N)
 {
     TArb t_suf = ConstrArb(fin, N);
@@ -64,93 +107,16 @@ TArbComp ConstrArbComp(FILE *fin, int N)
         return NULL;
     }
 
-    TArbComp t = TransfTArbInTArbComp(t_suf, "");
+    TArbComp t = TransfTArbInTArbComp(t_suf, "#");
+    DistrugeArb(&t_suf);
     if (!t) {
-        DistrugeArb(&t_suf);
         return NULL;
     }
 
-    DistrugeArb(&t_suf);
+    CompresareSufixe(t);
+
     return t;
 }
-
-// TArb CreareSufix(TArb t, char *sufix)
-// // returnez nodul la care m-am oprit
-// {
-//     if (!t) {
-//         return NULL;
-//     }
-
-//     char litera[2] = "";
-//     litera[0] = t->eticheta;
-//     strcat(sufix, litera);
-
-//     int i;
-//     int nr = 0;
-//     TArb aux;
-//     for (i = 0; i < 27; i++) {
-//         if (t->copii[i]) {
-//             nr++;
-//             aux = t->copii[i];
-//         }
-//     }
-
-//     if (nr == 1) {
-//         litera[0] = t->eticheta;
-//         litera[1] = '\0';
-//         strcat(sufix, litera);
-//         t = CreareSufix(aux, sufix);
-//     }
-
-//     return t;
-// }
-
-// void AdaugaSufixe(TArbComp t_comp, TArb t)
-// {
-//     if (!t) {
-//         return;
-//     }
-
-//     if (!t_comp->copii) {
-//         t_comp->copii = (TArbComp *)calloc(1, sizeof(TArbComp));
-//         if (!t_comp->copii) {
-//             DistrugeArbComp(&t_comp);
-//             return;
-//         }
-//         t_comp->nr_copii = 1;
-
-//         t_comp->copii[0] = AlocNodComp("$");
-//         if (!t_comp->copii[0]) {
-//             DistrugeArbComp(&t_comp);
-//             return;
-//         }
-//     }
-    
-//     int i;
-//     for (i = 0; i < 27; i++) {
-//         TArb aux = t->copii[i];
-//         TArbComp aux_comp = t_comp;
-
-//         //while (aux) {
-//         char sufix[21] = "";
-//         aux = CreareSufix(aux, sufix);
-
-//         TArbComp *aux_comp2 = realloc(aux_comp->copii, (aux_comp->nr_copii + 1) * sizeof(TArbComp));  // pune casturi
-//         if (!aux_comp2) {
-//             return;
-//         }
-//         aux_comp->copii[aux_comp->nr_copii] = AlocNodComp(sufix);
-//         aux_comp->copii[aux_comp->nr_copii]->copii = calloc(1, sizeof(TArbComp));  // verifica alocare
-//         aux_comp->copii[aux_comp->nr_copii]->copii[0] = AlocNodComp("$");
-//         aux_comp->copii[aux_comp->nr_copii]->nr_copii = 1;
-//         aux_comp->nr_copii++;
-//         //}
-
-//         aux_comp = aux_comp->copii[aux_comp->nr_copii - 1];
-
-//         AdaugaSufixe(aux_comp, aux);
-//     }
-// }
 
 int AfisareArboreComp(FILE *fout, TArbComp t)
 {

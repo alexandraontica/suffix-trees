@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
         }
 
         DistrugeArb(&arb_suf);
-    } else if (!strcmp(argv[1], "-c4")){
+    } else if (!strcmp(argv[1], "-c4")) {
         // cerinta 4
         TArbComp arb_suf_comp = ConstrArbComp(fin, N);
         if (!arb_suf_comp) {
