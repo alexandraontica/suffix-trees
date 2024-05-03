@@ -3,6 +3,7 @@
 #include "arb_suf.h"
 
 TArbComp AlocNodComp(char *eticheta_nod)
+// aloca un nod pentru arborele compact cu eticheta primita ca parametru
 {
     TArbComp aux = (TArbComp)calloc(1, sizeof(TNodComp));
     if (aux) {
@@ -19,24 +20,28 @@ TArbComp AlocNodComp(char *eticheta_nod)
 }
 
 TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
-// scriu arborele de sufixe creat ca la cerintele anterioare
-// folosind structura TArbComp ca sa il pot prelucra ulterior
+// transforma arborele creat ca la cerinta 1 intr-un arbore de tipul TArbComp
 {
     if (!t) {
         return NULL;
     }
+
+    // aloc nodul pe care vreau sa il adaug in arborele compact:
     TArbComp t_comp = AlocNodComp(eticheta);
     if (!t_comp) {
         return NULL;
     }
 
+    // creez vectorul de copii:
     int i;
     for (i = 0; i < 27; ++i) {
-        if (t->copii[i]) {
+        if (t->copii[i]) {  // daca exista copilul
+            // transform eticheta in string:
             char eticheta_urm[2] = "";
             eticheta_urm[0] = t->copii[i]->eticheta;
             eticheta_urm[1] = '\0';
 
+            // aloc suficiente pozitii in vectorul de copii ca sa pot sa il adaug pe cel curent:
             TArbComp *aux = (TArbComp *)realloc(t_comp->copii, (t_comp->nr_copii + 1) * sizeof(TArbComp));
             if (!aux) {
                 DistrugeArbComp(&t_comp);
@@ -44,6 +49,7 @@ TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
             }
             t_comp->copii = aux;
 
+            // transform fiecare subarbore din arborele initial in tipul TArbComp:
             t_comp->copii[t_comp->nr_copii] = TransfTArbInTArbComp(t->copii[i], eticheta_urm);
             if (!t_comp->copii[t_comp->nr_copii]) {
                 DistrugeArbComp(&t_comp);
@@ -57,24 +63,28 @@ TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
     return t_comp;
 }
 
-void CompresareSufixe(TArbComp t)
+int CompresareSufixe(TArbComp t)
+// transforma arborele intr-unul compact
 {
     if (!t) {
-        return;
+        return 1;  // nimic de copresat
     }
 
+    // daca nodul curent are un singur fiu diferit de '$':
     if (t->nr_copii == 1 && strcmp(t->copii[0]->eticheta, "$")) {
+        // eticheta fiului poate fi adaugata la cea a noudului curent:
         char *aux = (char *)realloc(t->eticheta, strlen(t->eticheta) + strlen(t->copii[0]->eticheta) + 1);
         if (!aux) {
-            return;
+            return 0;
         }
 
         t->eticheta = aux;
         strcat(t->eticheta, t->copii[0]->eticheta);
 
+        // elimin fiul; copiii fiului devin copiii nodului curent:
         TArbComp *aux2 = (TArbComp *)realloc(t->copii, t->copii[0]->nr_copii * sizeof(TArbComp));
         if (!aux2) {
-            return;
+            return 0;
         }
 
         t->copii = aux2;
@@ -91,40 +101,62 @@ void CompresareSufixe(TArbComp t)
         free(aux3->copii);
         free(aux3);
 
-        CompresareSufixe(t); // de justificat
+        // apelez functia pentru nodul curent din nou deoarece
+        // copiii fiului pe care doar ce l-am eliminat nu au fost verificati:
+        int rez = CompresareSufixe(t);
+        if (!rez) {
+            return 0;
+        }
     }
 
     int i;
     for (i = 0; i < t->nr_copii; i++) {
-        CompresareSufixe(t->copii[i]);
+        int rez = CompresareSufixe(t->copii[i]);
+        if (!rez) {
+            return 0;
+        }
     }
+
+    return 1;
 }
 
 TArbComp ConstrArbComp(FILE *fin, int N)
+// construieste arborele de sufixe compact
 {
+    // construieste arborele ca la cerinta 1:
     TArb t_suf = ConstrArb(fin, N);
     if (!t_suf) {
         return NULL;
     }
 
+    // transforma arborele in unul de tipul TArbComp:
     TArbComp t = TransfTArbInTArbComp(t_suf, "#");
     DistrugeArb(&t_suf);
     if (!t) {
         return NULL;
     }
 
-    CompresareSufixe(t);
+    // transforma arborele in unul compact:
+    int rez = CompresareSufixe(t);
+    if (!rez) {
+        DistrugeArbComp(&t);
+        return NULL;
+    }
 
     return t;
 }
 
 int AfisareArboreComp(FILE *fout, TArbComp t)
+// afiseaza arborele compact
+// parcurgere in latime folosind o coada
 {
     TCoadaComp *c = InitQComp();
     if (!c) {
         return 0;
     }
 
+    // radacina nu o introduc in coada deoarece nu trebuie sa o afisez si pe ea
+    // incep prin a adauga in coada nodurile de pe primul nivel
     int i;
     for (i = 0; i < t->nr_copii; i++) {
         if (t->copii && t->copii[i]) {
@@ -142,10 +174,11 @@ int AfisareArboreComp(FILE *fout, TArbComp t)
             return 0;
         }
 
-    while (c->inc) {  // coada e nevida
+    while (c->inc) {  // cat timp coada e nevida
         TArbComp n;
-        ExtrQComp(c, &n);  // nu este nevoie sa verific ce returneaza functia, stiu ca c e coada nevida
+        ExtrQComp(c, &n);  // extrag un nod din coada
         
+        // afisez informatia corespunzatoare nodului extras:
         if (!n) {
             fprintf(fout, "\n");
 
@@ -159,6 +192,7 @@ int AfisareArboreComp(FILE *fout, TArbComp t)
         } else {
             fprintf(fout, "%s ", n->eticheta);
 
+            // adaug in coada copiii nodului extras:
             int i;
             for (i = 0; i < n->nr_copii; i++) {
                 if (n && n->copii[i]) {
@@ -177,12 +211,14 @@ int AfisareArboreComp(FILE *fout, TArbComp t)
 }
 
 void DistrugeArbComp(TArbComp *t)
+// elibereaza memoria ocupata de arborele de sufixe compact
 {
     if (!(*t)) {
         return;
     }
 
-    for (int i = 0; i < (*t)->nr_copii; i++) {
+    int i;
+    for ( i = 0; i < (*t)->nr_copii; i++) {
         DistrugeArbComp(&((*t)->copii[i]));
     }
 
@@ -195,6 +231,7 @@ void DistrugeArbComp(TArbComp *t)
 // implementare coada pentru parcurgerea in latime:
 
 TListaComp AlocCelulaComp(TArbComp n)
+// aloca o celula (pentru coada)
 {
     TListaComp aux = (TListaComp)calloc(1, sizeof(TCelulaComp));
     if (!aux) {
@@ -208,7 +245,7 @@ TListaComp AlocCelulaComp(TArbComp n)
 }
 
 TCoadaComp* InitQComp()
-// creare coada vida
+// creeaza coada vida
 {
     TCoadaComp *c = (TCoadaComp *)calloc(1, sizeof(TCoadaComp));
     if (!c) {
@@ -277,6 +314,7 @@ void ResetQComp(TCoadaComp *c)
 }
 
 void DistrugeQComp(TCoadaComp **c)
+// elibereaza memoria ocupata de coada
 {
     ResetQComp(*c);
     free(*c);

@@ -7,11 +7,13 @@ int main(int argc, char *argv[])
     int idx_in = 2;
     int idx_out = 3;
 
-    if (argc == 5) {  // cerinta 2 are un parametru in plus (-c2 <K>)
+    if (argc == 5) {
+        // cerinta 2 are un parametru in plus (<K>) inainte de numele fisierelor
         idx_in++;
         idx_out++;   
     }
 
+    // deschid fisierele de input/output:
     FILE *fin = fopen(argv[idx_in], "r");
 
     if (fin == NULL) {
@@ -28,8 +30,9 @@ int main(int argc, char *argv[])
     }
     
     int N;
-    fscanf(fin, "%d", &N);
+    fscanf(fin, "%d", &N);  // numar cuvinte de adaugat in arbore
 
+    // identific cerinta pe care trebuie sa o rezolv:
     if (!strcmp(argv[1], "-c1")) {
         // cerinta 1
         TArb arb_suf = ConstrArb(fin, N);
@@ -41,6 +44,7 @@ int main(int argc, char *argv[])
 
         int rez = AfisareArbore(fout, arb_suf);
         if (!rez) {
+            // pot aparea probleme la alocari (coada)
             fprintf(stderr, "Afisarea nu a reusit\n");
         }
 
@@ -56,7 +60,11 @@ int main(int argc, char *argv[])
         
         fprintf(fout, "%d\n", NrFrunze(arb_suf));
 
+        // K poate avea maxim 2 cifre (nu exista cuvinte mai lungi)
         int K = argv[2][0] - '0';
+        if (argv[2][1] != '\0') {
+            K = K * 10 + argv[2][1] - '0';
+        }
         fprintf(fout, "%d\n", NrSufixe(arb_suf, K));
         
         fprintf(fout, "%d\n", MaxDescendentiDirecti(arb_suf));

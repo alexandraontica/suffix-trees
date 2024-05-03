@@ -25,7 +25,7 @@ typedef struct coada_comp {
 // functii cerinta 4:
 TArbComp AlocNodComp(char *eticheta_nod);
 TArbComp TransfTArbInTArbComp(TArb t, char *eticheta);
-void CompresareSufixe(TArbComp t);
+int CompresareSufixe(TArbComp t);
 TArbComp ConstrArbComp(FILE *fin, int N);
 int AfisareArboreComp(FILE *fout, TArbComp t);
 void DistrugeArbComp(TArbComp *t);

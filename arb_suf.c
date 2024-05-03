@@ -2,12 +2,14 @@
 #include "arb_suf.h"
 
 void CloseFiles(FILE *fin, FILE *fout)
+// inchide fisierele de input si output
 {
     fclose(fin);
     fclose(fout);
 }
 
 TArb AlocNod(char eticheta_nod)
+// aloca un nod cu eticheta primita ca parametru
 {
     TArb aux = (TArb)calloc(1, sizeof(TNod));
     if (aux) {
@@ -22,12 +24,15 @@ TArb AlocNod(char eticheta_nod)
 }
 
 TArb ConstrArb(FILE *fin, int N)
+// construieste arborele de sufixe
 {
-    TArb t = AlocNod('#');  // eticheta radacinei este irelevanta, nu o folosesc
+    // aloc radacina:
+    TArb t = AlocNod('#');  // eticheta radacinii este irelevanta, nu o folosesc
     if (!t) {
         return NULL;
     }
 
+    // adaug in arbore nodul '$'
     t->copii[0] = AlocNod('$');
     if (!t->copii[0]) {
         free(t);
@@ -39,6 +44,7 @@ TArb ConstrArb(FILE *fin, int N)
         char cuvant[21];  // presupun ca nu exista cuvinte cu mai mult de 20 de litere
         fscanf(fin, "%s", cuvant);
 
+        // parcurg sufixele cuvantului curent:
         int len_cuv = strlen(cuvant);
         int j;
         for (j = len_cuv - 1; j >= 0; j--) {
@@ -70,8 +76,10 @@ TArb ConstrArb(FILE *fin, int N)
                 k++;
             }
 
+             // am ajuns la finalul sufixului
+             // daca nu exista deja nodul '$' il adaug
             if (!aux->copii[0]) {
-                aux->copii[0] = AlocNod('$');  // am ajuns la finalul sufixului
+                aux->copii[0] = AlocNod('$');
                 if (!aux->copii[0]) {
                     DistrugeArb(&t);
                     return NULL;
@@ -84,12 +92,14 @@ TArb ConstrArb(FILE *fin, int N)
 }
 
 void DistrugeArb(TArb *t)
+// elibereaza memoria ocupata de arborele de sufixe
 {
     if (!(*t)) {
         return;
     }
 
-    for (int i = 0; i < 27; i++) {
+    int i;
+    for (i = 0; i < 27; i++) {
         DistrugeArb(&((*t)->copii[i]));
     }
 
@@ -98,12 +108,16 @@ void DistrugeArb(TArb *t)
 }
 
 int AfisareArbore(FILE *fout, TArb t)
+// afiseaza arborele
+// parcurgere in latime folosind o coada
 {
     TCoada *c = InitQ();
     if (!c) {
         return 0;
     }
 
+    // radacina nu o introduc in coada deoarece nu trebuie sa o afisez si pe ea
+    // incep prin a adauga in coada nodurile de pe primul nivel
     int i;
     for (i = 0; i < 27; i++) {
         if (t && t->copii[i]) {
@@ -115,16 +129,17 @@ int AfisareArbore(FILE *fout, TArb t)
         }
     }
 
-    int rez = IntrQ(c, NULL);  // marchez finalul unui nivel
+    int rez = IntrQ(c, NULL);  // marchez finalul unui nivel ca sa stiu sa afisez newline
         if (!rez) {
             DistrugeQ(&c);
             return 0;
         }
 
-    while (c->inc) {  // coada e nevida
+    while (c->inc) {  // cat timp coada e nevida
         TArb n;
-        ExtrQ(c, &n);  // nu este nevoie sa verific ce returneaza functia, stiu ca c e coada nevida
+        ExtrQ(c, &n);  // extrag un nod din coada
         
+        // afisez informatia corespunzatoare nodului extras:
         if (!n) {
             fprintf(fout, "\n");
 
@@ -138,6 +153,7 @@ int AfisareArbore(FILE *fout, TArb t)
         } else {
             fprintf(fout, "%c ", n->eticheta);
 
+            // adaug in coada copiii nodului extras:
             int i;
             for (i = 0; i < 27; i++) {
                 if (n->copii[i]) {
@@ -156,6 +172,7 @@ int AfisareArbore(FILE *fout, TArb t)
 }
 
 int NrFrunze(TArb t)
+// numara frunzele din arbore
 {
     if (!t) {
         return 0;
@@ -163,7 +180,8 @@ int NrFrunze(TArb t)
 
     int nr = 0;
 
-    if (t->copii[0]) {  // nodurile frunza sunt cele cu caracterul '$', retinute pe poz 0 in vectorii de copii
+    // nodurile frunza sunt cele cu caracterul '$', retinute pe poz 0 in vectorul de copii
+    if (t->copii[0]) {
         nr++;
     }
 
@@ -176,6 +194,7 @@ int NrFrunze(TArb t)
 }
 
 int NrSufixe(TArb t, int K)
+// numara sufixele de lungima K din arbore
 {
     if (!t) {
         return 0;
@@ -189,7 +208,6 @@ int NrSufixe(TArb t, int K)
         return 1;
     }
 
-    // parcurg arborele in adancime:
     int nr = 0, i;
     for (i = 1; i < 27; i++) {
         nr = nr + NrSufixe(t->copii[i], K - 1);
@@ -199,11 +217,13 @@ int NrSufixe(TArb t, int K)
 }
 
 int MaxDescendentiDirecti(TArb t)
+// determina numarul maxim de descendenti directi ai unui nod din arbore
 {
     if (!t) {
         return 0;
     }
 
+    // numar descendetii directi ai nodului curent:
     int nr = 0, i;
     for (i = 0; i < 27; i++) {
         if (t->copii[i]) {
@@ -211,6 +231,7 @@ int MaxDescendentiDirecti(TArb t)
         }
     }
 
+    // calculez maximul:
     int max = nr;
     for (i = 0; i < 27; i++) {
         int max_copil = MaxDescendentiDirecti(t->copii[i]);
@@ -223,19 +244,22 @@ int MaxDescendentiDirecti(TArb t)
 }
 
 int ExistaSufix(TArb t, char *sufix)
+// verifica daca un sufix dat apartine arborelui
 {
+    // verific litera cu litera daca sufixul se afla in arbore:
     int len_suf = strlen(sufix);
-    TArb aux = t;
     int k;
     for (k = 0; k < len_suf; k++) {
-        if (aux && aux->copii[sufix[k] - 'a' + 1]) {
-            aux = aux->copii[sufix[k] - 'a' + 1];
+        if (t && t->copii[sufix[k] - 'a' + 1]) {
+            t = t->copii[sufix[k] - 'a' + 1];
         } else {
-            break;
+            break;  // litera curenta nu se afla in ordinea din sufix si in arbore
         }
     }
 
-    if (k == len_suf && aux->copii[0]) {
+    if (k == len_suf && t->copii[0]) {
+        // am parcurs tot sufixul litera cu litera si
+        // nodul la care am ajuns are ca si copil caracterul de final de sufix
         return 1;
     }
     return 0;
@@ -244,6 +268,7 @@ int ExistaSufix(TArb t, char *sufix)
 // implementare coada pentru parcurgerea in latime:
 
 TLista AlocCelula(TArb n)
+// aloca o celula (pentru coada)
 {
     TLista aux = (TLista)calloc(1, sizeof(TCelula));
     if (!aux) {
@@ -257,7 +282,7 @@ TLista AlocCelula(TArb n)
 }
 
 TCoada* InitQ()
-// creare coada vida
+// creeaza coada vida
 {
     TCoada *c = (TCoada *)calloc(1, sizeof(TCoada));
     if (!c) {
@@ -326,6 +351,7 @@ void ResetQ(TCoada *c)
 }
 
 void DistrugeQ(TCoada **c)
+// elibereaza memoria ocupata de coada
 {
     ResetQ(*c);
     free(*c);
