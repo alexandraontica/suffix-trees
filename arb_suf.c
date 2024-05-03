@@ -41,7 +41,7 @@ TArb ConstrArb(FILE *fin, int N)
 
     int i;
     for (i = 0; i < N; i++) {
-        char cuvant[21];  // presupun ca nu exista cuvinte cu mai mult de 20 de litere
+        char cuvant[LEN_STR + 1];  // presupun ca nu exista cuvinte cu mai mult de 20 de litere
         fscanf(fin, "%s", cuvant);
 
         // parcurg sufixele cuvantului curent:

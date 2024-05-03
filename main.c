@@ -4,8 +4,8 @@
 
 int main(int argc, char *argv[])
 {
-    int idx_in = 2;
-    int idx_out = 3;
+    int idx_in = 2;  // pozitia in argv a numelui fisierului de intrare
+    int idx_out = 3;  // pozitia in argv a numelui fisierului de iesire
 
     if (argc == 5) {
         // pentru cerintele 1, 3 si 4, argc == 4

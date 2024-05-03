@@ -6,6 +6,8 @@
 #ifndef ARBORE_H
 #define ARBORE_H
 
+#define LEN_STR 20
+
 typedef struct nod {
     char eticheta;
     struct nod *copii[27];
