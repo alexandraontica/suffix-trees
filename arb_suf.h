@@ -40,4 +40,4 @@ int ExtrQ(TCoada *c, TArb *n);
 void ResetQ(TCoada *c);
 void DistrugeQ(TCoada **c);
 
-#endif
+#endif // ARBORE_H

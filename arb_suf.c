@@ -32,7 +32,7 @@ TArb ConstrArb(FILE *fin, int N)
         return NULL;
     }
 
-    // adaug in arbore nodul '$'
+    // adaug in arbore nodul '$':
     t->copii[0] = AlocNod('$');
     if (!t->copii[0]) {
         free(t);
@@ -77,7 +77,7 @@ TArb ConstrArb(FILE *fin, int N)
             }
 
              // am ajuns la finalul sufixului
-             // daca nu exista deja nodul '$' il adaug
+             // daca nu exista deja nodul '$' il adaug:
             if (!aux->copii[0]) {
                 aux->copii[0] = AlocNod('$');
                 if (!aux->copii[0]) {
@@ -117,7 +117,7 @@ int AfisareArbore(FILE *fout, TArb t)
     }
 
     // radacina nu o introduc in coada deoarece nu trebuie sa o afisez si pe ea
-    // incep prin a adauga in coada nodurile de pe primul nivel
+    // incep prin a adauga in coada nodurile de pe nivelul 1
     int i;
     for (i = 0; i < 27; i++) {
         if (t && t->copii[i]) {

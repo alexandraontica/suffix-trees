@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     int idx_out = 3;
 
     if (argc == 5) {
+        // pentru cerintele 1, 3 si 4, argc == 4
         // cerinta 2 are un parametru in plus (<K>) inainte de numele fisierelor
         idx_in++;
         idx_out++;   
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
         // K poate avea maxim 2 cifre (nu exista cuvinte mai lungi)
         int K = argv[2][0] - '0';
         if (argv[2][1] != '\0') {
-            K = K * 10 + argv[2][1] - '0';
+            K = K * 10 + (argv[2][1] - '0');
         }
         fprintf(fout, "%d\n", NrSufixe(arb_suf, K));
         

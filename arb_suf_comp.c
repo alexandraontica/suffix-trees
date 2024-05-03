@@ -1,6 +1,5 @@
 /* ONȚICĂ Alexandra-Elena - 311CB */
 #include "arb_suf_comp.h"
-#include "arb_suf.h"
 
 TArbComp AlocNodComp(char *eticheta_nod)
 // aloca un nod pentru arborele compact cu eticheta primita ca parametru
@@ -49,7 +48,7 @@ TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
             }
             t_comp->copii = aux;
 
-            // transform fiecare subarbore din arborele initial in tipul TArbComp:
+            // transform subarborele cu radacina in copilul curent in tipul TArbComp:
             t_comp->copii[t_comp->nr_copii] = TransfTArbInTArbComp(t->copii[i], eticheta_urm);
             if (!t_comp->copii[t_comp->nr_copii]) {
                 DistrugeArbComp(&t_comp);
@@ -63,16 +62,16 @@ TArbComp TransfTArbInTArbComp(TArb t, char *eticheta)
     return t_comp;
 }
 
-int CompresareSufixe(TArbComp t)
+int ComprimareSufixe(TArbComp t)
 // transforma arborele intr-unul compact
 {
     if (!t) {
-        return 1;  // nimic de copresat
+        return 1;  // nimic de coprimat
     }
 
     // daca nodul curent are un singur fiu diferit de '$':
     if (t->nr_copii == 1 && strcmp(t->copii[0]->eticheta, "$")) {
-        // eticheta fiului poate fi adaugata la cea a noudului curent:
+        // eticheta fiului poate fi adaugata la cea a nodului curent:
         char *aux = (char *)realloc(t->eticheta, strlen(t->eticheta) + strlen(t->copii[0]->eticheta) + 1);
         if (!aux) {
             return 0;
@@ -103,7 +102,7 @@ int CompresareSufixe(TArbComp t)
 
         // apelez functia pentru nodul curent din nou deoarece
         // copiii fiului pe care doar ce l-am eliminat nu au fost verificati:
-        int rez = CompresareSufixe(t);
+        int rez = ComprimareSufixe(t);
         if (!rez) {
             return 0;
         }
@@ -111,7 +110,7 @@ int CompresareSufixe(TArbComp t)
 
     int i;
     for (i = 0; i < t->nr_copii; i++) {
-        int rez = CompresareSufixe(t->copii[i]);
+        int rez = ComprimareSufixe(t->copii[i]);
         if (!rez) {
             return 0;
         }
@@ -129,15 +128,15 @@ TArbComp ConstrArbComp(FILE *fin, int N)
         return NULL;
     }
 
-    // transforma arborele in unul de tipul TArbComp:
+    // transforma arborele intr-unul de tipul TArbComp (tot atomic):
     TArbComp t = TransfTArbInTArbComp(t_suf, "#");
     DistrugeArb(&t_suf);
     if (!t) {
         return NULL;
     }
 
-    // transforma arborele in unul compact:
-    int rez = CompresareSufixe(t);
+    // transforma arborele atomic intr-unul compact:
+    int rez = ComprimareSufixe(t);
     if (!rez) {
         DistrugeArbComp(&t);
         return NULL;
