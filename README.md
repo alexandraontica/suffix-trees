@@ -2,8 +2,6 @@
 
 # Arbori de sufixe
 
-**Punctaj local: 95p + 20p Bonus**
-
 Pentru a deschide fisierele de input si output, am calculat mai întâi poziția numelor acestora in vectorul parametrilor în linia de comandă deoarece în cadrul cerinței 2 există un parametru în plus și, deci, poziția (indicii) se modifică.
 Am deschis fișierele, verificând dacă operațiile au reușit, și am citit numărul de cuvinte care vor trebui adăugate în arborele de sufixe în cadrul cerințelor.
 
