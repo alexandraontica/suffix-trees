@@ -1,5 +1,3 @@
-*Onțică Alexandra-Elena - 311CB*
-
 # Arbori de sufixe
 
 Pentru a deschide fisierele de input si output, am calculat mai întâi poziția numelor acestora in vectorul parametrilor în linia de comandă deoarece în cadrul cerinței 2 există un parametru în plus și, deci, poziția (indicii) se modifică.
